@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-    <meta http-equiv="refresh" content="3;url=https://www.islandloafstay.com">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="mobile-web-app-capable" content="yes">
@@ -16,10 +15,10 @@
             height: 100%;
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #FF7B9C 0%, #FF6B9D 50%, #C77BAF 100%);
+            background: #fff1f2;
         }
 
-        .splash {
+        #splash {
             position: fixed;
             inset: 0;
             display: flex;
@@ -28,6 +27,14 @@
             align-items: center;
             text-align: center;
             padding: 24px;
+            background: linear-gradient(135deg, #FF7B9C 0%, #FF6B9D 50%, #C77BAF 100%);
+            z-index: 10;
+            transition: opacity 0.4s ease;
+        }
+
+        #splash.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
         .icon {
@@ -58,16 +65,74 @@
             animation: spin 0.8s linear infinite;
         }
 
-        .fallback-link {
-            margin-top: 32px;
-            color: #fff;
-            font-size: 13px;
+        #app-frame {
+            border: none;
+            width: 100%;
+            height: 100%;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        .fallback-link a {
-            color: #fff;
+        #error-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #FF7B9C 0%, #FF6B9D 50%, #C77BAF 100%);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 32px;
+            z-index: 20;
+        }
+
+        #error-screen.visible { display: flex; }
+
+        .error-card {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .error-card h2 {
+            color: #1f2937;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .error-card p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-retry {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF7B9C, #FF6B9D);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 25px;
+            font-size: 15px;
             font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .btn-open {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
             text-decoration: underline;
+            cursor: pointer;
+            border: none;
+            background: none;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -85,30 +150,77 @@
     </style>
 </head>
 <body>
-    <div class="splash">
+
+    <!-- Splash / loading screen -->
+    <div id="splash">
         <div class="icon">🏝️</div>
         <div class="title">IslandLoaf Stay</div>
-        <div class="subtitle">Loading Sri Lanka experiences&hellip;</div>
+        <div class="subtitle">Loading Sri Lanka experiences...</div>
         <div class="spinner"></div>
-        <p class="fallback-link">
-            Not redirecting? <a href="https://www.islandloafstay.com">Tap here</a>
-        </p>
+    </div>
+
+    <!-- Main app iframe (loads your custom domain, NOT replit) -->
+    <iframe
+        id="app-frame"
+        src="https://www.islandloafstay.com"
+        allow="geolocation; payment; camera; microphone"
+        allowfullscreen
+    ></iframe>
+
+    <!-- Error screen (shown if load fails) -->
+    <div id="error-screen">
+        <div class="error-card">
+            <h2>Unable to connect</h2>
+            <p>We couldn't load IslandLoaf Stay.<br>Check your internet and try again.</p>
+            <button class="btn-retry" onclick="retryLoad()">Try Again</button>
+            <button class="btn-open" onclick="openExternal()">Open in browser instead</button>
+        </div>
     </div>
 
     <script>
-        (function () {
-            var TARGET = 'https://www.islandloafstay.com';
+        var SITE_URL = 'https://www.islandloafstay.com';
+        var TIMEOUT_MS = 20000;
 
-            try {
-                if (window.top && window.top !== window.self) {
-                    window.top.location.replace(TARGET);
-                } else {
-                    window.location.replace(TARGET);
-                }
-            } catch (e) {
-                window.location.replace(TARGET);
-            }
-        })();
+        var splash  = document.getElementById('splash');
+        var frame   = document.getElementById('app-frame');
+        var errScr  = document.getElementById('error-screen');
+        var loaded  = false;
+
+        var timer = setTimeout(function () {
+            if (!loaded) showError();
+        }, TIMEOUT_MS);
+
+        frame.addEventListener('load', function () {
+            loaded = true;
+            clearTimeout(timer);
+            splash.classList.add('hidden');
+            setTimeout(function () { splash.style.display = 'none'; }, 500);
+        });
+
+        frame.addEventListener('error', function () {
+            clearTimeout(timer);
+            showError();
+        });
+
+        function showError() {
+            splash.style.display = 'none';
+            errScr.classList.add('visible');
+        }
+
+        function retryLoad() {
+            errScr.classList.remove('visible');
+            splash.style.display = 'flex';
+            splash.classList.remove('hidden');
+            loaded = false;
+            frame.src = SITE_URL + '?t=' + Date.now();
+            timer = setTimeout(function () {
+                if (!loaded) showError();
+            }, TIMEOUT_MS);
+        }
+
+        function openExternal() {
+            window.open(SITE_URL, '_blank');
+        }
     </script>
 </body>
 </html>
