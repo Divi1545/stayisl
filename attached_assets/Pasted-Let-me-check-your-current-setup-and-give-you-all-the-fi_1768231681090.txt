@@ -1,0 +1,201 @@
+Let me check your current setup and give you all the fixes needed to make it work perfectly on GoodBarber:
+
+[3 tools called]
+
+Perfect! I can see the issues. Here are **ALL the fixes** you need to make your app work perfectly on GoodBarber:
+
+---
+
+## 🔧 **FIX 1: Update `next.config.ts`**
+
+Replace your entire `next.config.ts` with this:
+
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+  poweredByHeader: false,
+  
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'replit.com',
+      },
+    ],
+    unoptimized: process.env.NODE_ENV === 'development',
+  },
+
+  // Important: Headers for mobile app compatibility
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          // Allow CORS for mobile apps
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+          // Mobile app compatibility
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+```
+
+---
+
+## 🔧 **FIX 2: Add `.env` file in Replit**
+
+Click **Secrets** (lock icon) in Replit and add:
+
+```bash
+NEXT_PUBLIC_USE_MOCK_DATA=true
+NEXT_PUBLIC_URL=https://www.islandloafstay.com
+NODE_ENV=production
+```
+
+---
+
+## 🔧 **FIX 3: Update `app/layout.tsx`**
+
+Update the viewport metadata (line 43-48):
+
+```typescript
+viewport: {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover', // Important for notched devices!
+},
+```
+
+---
+
+## 🔧 **FIX 4: Create `.replit` file**
+
+Create a file called `.replit` in your project root:
+
+```toml
+run = "npm run dev"
+hidden = [".config", "package-lock.json"]
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+run = ["sh", "-c", "npm run build && npm run start"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+```
+
+---
+
+## 🔧 **FIX 5: Update `package.json` scripts**
+
+Make sure your scripts section looks like this:
+
+```json
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start -p 3000",
+  "lint": "eslint"
+},
+```
+
+---
+
+## ✅ **TESTING CHECKLIST:**
+
+After applying fixes, test these in order:
+
+### **1. Test on Replit:**
+```
+1. Save all files
+2. Click "Run" in Replit
+3. Open the Webview
+4. Should see your pink homepage with categories
+```
+
+### **2. Test Direct URL:**
+```
+1. Open https://www.islandloafstay.com in phone browser
+2. Should load perfectly
+3. Test navigation, search, categories
+```
+
+### **3. Test in GoodBarber:**
+```
+1. Go to GoodBarber Dashboard
+2. Sections → HTTP Section
+3. URL: https://www.islandloafstay.com
+4. Enable: Full Screen, JavaScript, Cookies
+5. Click Preview
+6. Should work without errors!
+```
+
+---
+
+## 🎯 **GoodBarber HTTP Section Settings:**
+
+Use these EXACT settings:
+
+```
+URL: https://www.islandloafstay.com
+
+Display:
+✅ Full Screen Mode
+✅ Hide Navigation Bar
+✅ Show Status Bar
+
+Features:
+✅ JavaScript: ON
+✅ Cookies: ON
+✅ Cache: ON
+✅ Pull to Refresh: ON
+✅ Geolocation: ON
+
+Links:
+✅ Internal Links: Open in Section
+⚠️ External Links: Ask User
+```
+
+---
+
+## 🚀 **Apply These Fixes Now:**
+
+**In Agent Mode:**
+1. Update `next.config.ts`
+2. Add viewport `viewportFit: 'cover'` to layout
+3. Set Replit Secrets
+4. Rebuild and test
+
+**After that, your app will work perfectly on GoodBarber!** 🎉
+
+---
+
+**Want me to switch to Agent Mode and apply these fixes for you?** Just say "switch to agent mode" and I'll make all the changes! 🔧
