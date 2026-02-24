@@ -3,15 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  
-  allowedDevOrigins: [
-    'localhost',
-    '127.0.0.1',
-    '*.replit.dev',
-    '*.repl.co',
-    '*.sisko.replit.dev',
-  ],
-  
+
   images: {
     remotePatterns: [
       {
@@ -26,12 +18,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.supabase.co',
       },
-      {
-        protocol: 'https',
-        hostname: 'replit.com',
-      },
     ],
-    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   async headers() {
@@ -46,7 +33,7 @@ const nextConfig: NextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://*.goodbarber.com https://*.goodbarber.app https://m.islandloaf.com https://*.replit.app https://*.repl.co",
+            value: "frame-ancestors 'self' https://*.goodbarber.com https://*.goodbarber.app https://m.islandloaf.com https://*.vercel.app",
           },
         ],
       },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const VENDOR_API_URL = process.env.VENDOR_API_URL || 'https://islandloafvendor.repl.co';
+const VENDOR_API_URL = process.env.VENDOR_API_URL || process.env.NEXT_PUBLIC_VENDOR_API_URL || 'https://www.islandloafvendor.com';
 
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
